@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樂團值班表產生器 (Tooltip 版)</title>
+    <title>樂團值班表產生器 (最終完整版)</title>
     <style>
+        /* --- 基礎設定 --- */
         body {
             font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
             max-width: 1200px;
@@ -14,35 +15,31 @@
         }
         h2 { color: #333; text-align: center; margin-bottom: 20px; }
 
-        /* --- Tooltip 樣式核心 --- */
+        /* --- Tooltip (提示框) 樣式 --- */
         [data-tooltip] {
             position: relative;
-            cursor: help; /* 滑鼠變成問號或手指 */
+            cursor: help;
         }
-        
-        /* 提示框本體 */
+        /* 提示文字本體 */
         [data-tooltip]:hover::after {
             content: attr(data-tooltip);
             position: absolute;
-            bottom: 125%; /* 顯示在上方 */
+            bottom: 125%;
             left: 50%;
             transform: translateX(-50%);
             background-color: #333;
             color: #fff;
-            padding: 6px 10px;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 13px;
             white-space: nowrap;
             z-index: 1000;
             opacity: 0;
             pointer-events: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             animation: fadeIn 0.2s forwards;
-            font-weight: normal;
-            line-height: 1.2;
         }
-
-        /* 提示框的小箭頭 */
+        /* 提示框下方的小箭頭 */
         [data-tooltip]:hover::before {
             content: '';
             position: absolute;
@@ -54,125 +51,149 @@
             opacity: 0;
             animation: fadeIn 0.2s forwards;
         }
-
         @keyframes fadeIn {
             to { opacity: 1; transform: translateX(-50%) translateY(-5px); }
         }
 
-        /* --- 原有排版樣式 --- */
+        /* --- 區塊佈局 --- */
         .config-section {
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin-bottom: 25px;
         }
 
         .section-title {
-            font-size: 1.1em;
+            font-size: 1.2em;
             font-weight: bold;
-            color: #555;
-            margin-bottom: 15px;
+            color: #444;
+            margin-bottom: 20px;
             border-bottom: 2px solid #eee;
             padding-bottom: 10px;
         }
 
         .date-range-global {
             text-align: center;
-            padding: 10px;
+            padding: 15px;
             background: #e3f2fd;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #bbdefb;
         }
-        .date-range-global input { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        .date-range-global input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
 
         .action-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
         }
 
         .action-card {
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             background: #fff;
             border: 1px solid #e0e0e0;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
         }
         
-        .card-ab { border-top: 4px solid #4CAF50; }
-        .card-silk { border-top: 4px solid #9C27B0; }
-        .card-training { border-top: 4px solid #FF5722; background-color: #fff8f5; }
+        /* 卡片頂部顏色條 */
+        .card-ab { border-top: 5px solid #4CAF50; }
+        .card-silk { border-top: 5px solid #9C27B0; }
+        .card-training { border-top: 5px solid #FF5722; background-color: #fff8f5; }
 
-        .card-header { font-weight: bold; font-size: 1.1em; color: #333; text-align: center; margin-bottom: 5px;}
-        
-        .input-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; margin-bottom: 5px; }
-        .input-row input[type="text"] { width: 60%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
-        .input-row label { width: 35%; color: #666; font-weight: bold; }
+        .card-header { font-weight: bold; font-size: 1.2em; color: #333; text-align: center; }
 
+        /* 輸入欄位樣式 */
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95em;
+        }
+        .input-row label { width: 30%; color: #666; font-weight: bold; }
+        .input-row input[type="text"] {
+            width: 65%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* 星期選擇器樣式 */
         .day-selector {
             display: flex;
             justify-content: space-between;
-            background: #f9f9f9;
-            padding: 8px;
+            background: #f8f9fa;
+            padding: 10px;
             border-radius: 6px;
             border: 1px solid #eee;
         }
-        .day-checkbox { display: flex; flex-direction: column; align-items: center; cursor: pointer; font-size: 0.85em; color: #555; }
-        .day-checkbox input { margin-bottom: 3px; cursor: pointer; }
+        .day-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #555;
+            flex: 1;
+        }
+        .day-label:hover { background-color: #e8f5e9; border-radius: 4px; }
+        .day-label input { margin-bottom: 5px; cursor: pointer; transform: scale(1.2); }
 
+        /* 按鈕樣式 */
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
             color: white;
-            transition: 0.2s;
+            transition: all 0.2s;
             margin-top: auto;
         }
-        button:hover { opacity: 0.9; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
 
         .btn-ab { background-color: #4CAF50; }
         .btn-silk { background-color: #9C27B0; }
         .btn-train { background-color: #FF5722; }
+        .btn-all { background-color: #333; }
         
+        /* 底部按鈕區 */
         .toolbar {
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
+            margin: 30px 0;
         }
-        .btn-copy { background-color: #2196F3; width: auto; padding: 10px 30px; font-size: 1.1em; }
-        .btn-clear { background-color: white; border: 1px solid #ccc; color: #666; width: auto; padding: 10px 20px; }
+        .btn-copy { background-color: #2196F3; width: auto; padding: 12px 30px; }
+        .btn-clear { background-color: white; border: 1px solid #ccc; color: #666; width: auto; padding: 12px 25px; }
         .btn-clear:hover { background-color: #ffebee; color: #d32f2f; border-color: #d32f2f; }
 
+        /* 表格樣式 */
         .table-container {
             background: white;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             overflow-x: auto;
-            min-height: 200px;
+            min-height: 300px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td {
             border: 1px solid #e0e0e0;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
             vertical-align: middle;
         }
-        th { background-color: #f8f9fa; color: #495057; }
+        th { background-color: #f8f9fa; color: #495057; font-weight: bold; }
         
+        /* 表格內輸入框 */
         input.editable-cell {
             width: 95%;
             border: 1px solid transparent;
@@ -180,7 +201,7 @@
             font-size: 15px;
             background: transparent;
             font-family: inherit;
-            padding: 5px 0;
+            padding: 6px 0;
         }
         input.editable-cell:hover, input.editable-cell:focus {
             border: 1px solid #2196F3;
@@ -188,84 +209,96 @@
             border-radius: 4px;
         }
         
-        .action-cell { display: flex; gap: 5px; justify-content: center; }
-        .icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 4px 8px; width: auto; border-radius: 4px; }
+        /* 表格內操作按鈕區 */
+        .action-cell { display: flex; gap: 8px; justify-content: center; }
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 4px;
+            width: auto;
+            transition: background 0.2s;
+        }
         .add-row-btn { color: #4CAF50; background: #e8f5e9; }
+        .add-row-btn:hover { background: #4CAF50; color: white; }
+        
         .del-btn { color: #f44336; background: #ffebee; }
-
+        .del-btn:hover { background: #f44336; color: white; }
     </style>
 </head>
 <body>
 
-    <h2>樂團值班表產生器 (含操作提示)</h2>
+    <h2>樂團值班表產生器 (最終完整版)</h2>
 
     <div class="config-section">
         <div class="section-title">Step 1: 設定學期例行團練</div>
         <div class="date-range-global">
-            <span data-tooltip="請選擇學期的第一天與最後一天">學期區間：</span>
+            <span data-tooltip="請選擇學期的第一天與最後一天">📅 學期區間：</span>
             <input type="date" id="semStartDate" data-tooltip="學期開始日期"> 至 
             <input type="date" id="semEndDate" data-tooltip="學期結束日期">
         </div>
 
         <div class="action-grid">
             <div class="action-card card-ab">
-                <div class="card-header" data-tooltip="產生 A/B 團的例行練習表">🎻 A/B 團</div>
+                <div class="card-header" data-tooltip="設定 A/B 團的例行練習">🎻 A/B 團</div>
                 
-                <div class="day-selector" id="daysAB" data-tooltip="勾選 A/B 團每週練習的星期">
-                    <label class="day-checkbox"><input type="checkbox" value="1"><span>一</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="2" checked><span>二</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="3"><span>三</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="4" checked><span>四</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="5"><span>五</span></label>
+                <div class="day-selector" id="daysAB" data-tooltip="勾選 A/B 團要練習的星期">
+                    <label class="day-label"><input type="checkbox" value="1"><span>一</span></label>
+                    <label class="day-label"><input type="checkbox" value="2" checked><span>二</span></label>
+                    <label class="day-label"><input type="checkbox" value="3"><span>三</span></label>
+                    <label class="day-label"><input type="checkbox" value="4" checked><span>四</span></label>
+                    <label class="day-label"><input type="checkbox" value="5"><span>五</span></label>
                 </div>
 
                 <div class="input-row">
-                    <label>活動(二)</label>
-                    <input type="text" id="txtAB_Tue" value="A團分組／B團合奏" data-tooltip="週二預設的活動名稱">
+                    <label data-tooltip="若是週二，將使用此內容">週二內容</label>
+                    <input type="text" id="txtAB_Tue" value="A團分組／B團合奏">
                 </div>
                 <div class="input-row">
-                    <label>活動(四)</label>
-                    <input type="text" id="txtAB_Thu" value="A團合奏／B團分組" data-tooltip="週四預設的活動名稱">
+                    <label data-tooltip="若是週四，將使用此內容">週四內容</label>
+                    <input type="text" id="txtAB_Thu" value="A團合奏／B團分組">
                 </div>
                 <div class="input-row">
-                    <label>其他天</label>
-                    <input type="text" id="txtAB_Other" value="A/B團加練" data-tooltip="若勾選週一三五，將顯示此名稱">
+                    <label data-tooltip="若勾選週一三五，將使用此內容">其他天</label>
+                    <input type="text" id="txtAB_Other" value="A/B團加練">
                 </div>
                 <div class="input-row">
-                    <label>時間</label>
-                    <input type="text" id="timeAB" value="16:00~18:30" data-tooltip="練習時間">
+                    <label>練習時間</label>
+                    <input type="text" id="timeAB" value="16:00~18:30" data-tooltip="設定時間">
                 </div>
-                <button class="btn-ab" onclick="generateSemester('AB')" data-tooltip="點擊產生 A/B 團行程 (會清除舊表)">產生 A/B 團表</button>
+                <button class="btn-ab" onclick="generateSemester('AB')" data-tooltip="清除舊表，僅產生 A/B 團行程">產生 A/B 團表</button>
             </div>
 
             <div class="action-card card-silk">
-                <div class="card-header" data-tooltip="產生絲竹團的例行練習表">🎋 絲竹團</div>
+                <div class="card-header" data-tooltip="設定絲竹團的例行練習">🎋 絲竹團</div>
 
-                <div class="day-selector" id="daysSilk" data-tooltip="勾選絲竹團每週練習的星期">
-                    <label class="day-checkbox"><input type="checkbox" value="1"><span>一</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="2"><span>二</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="3" checked><span>三</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="4"><span>四</span></label>
-                    <label class="day-checkbox"><input type="checkbox" value="5"><span>五</span></label>
+                <div class="day-selector" id="daysSilk" data-tooltip="勾選絲竹團要練習的星期">
+                    <label class="day-label"><input type="checkbox" value="1"><span>一</span></label>
+                    <label class="day-label"><input type="checkbox" value="2"><span>二</span></label>
+                    <label class="day-label"><input type="checkbox" value="3" checked><span>三</span></label>
+                    <label class="day-label"><input type="checkbox" value="4"><span>四</span></label>
+                    <label class="day-label"><input type="checkbox" value="5"><span>五</span></label>
                 </div>
 
                 <div class="input-row">
                     <label>活動內容</label>
-                    <input type="text" id="txtSilk" value="絲竹團合奏" data-tooltip="絲竹團的活動名稱">
+                    <input type="text" id="txtSilk" value="絲竹團合奏" data-tooltip="絲竹團活動名稱">
                 </div>
                 <div class="input-row">
-                    <label>時間</label>
-                    <input type="text" id="timeSilk" value="12:00~15:00" data-tooltip="練習時間">
+                    <label>練習時間</label>
+                    <input type="text" id="timeSilk" value="12:00~15:00" data-tooltip="設定時間">
                 </div>
-                <button class="btn-silk" onclick="generateSemester('Silk')" data-tooltip="點擊產生絲竹團行程 (會清除舊表)">產生 絲竹團表</button>
+                <button class="btn-silk" onclick="generateSemester('Silk')" data-tooltip="清除舊表，僅產生絲竹團行程">產生 絲竹團表</button>
             </div>
             
-            <div class="action-card" style="border-top: 4px solid #333;">
+            <div class="action-card" style="border-top: 5px solid #333;">
                 <div class="card-header">✨ 學期總表</div>
-                <div style="font-size: 0.9em; color: #666; text-align: center; margin: 10px 0;">
-                    依照左側所有設定<br>合併產生完整課表
+                <div style="font-size: 0.9em; color: #666; text-align: center; margin: 10px 0; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                    將 A/B 團與絲竹團的所有設定<br>合併產生出一份完整的總表
                 </div>
-                <button style="background-color: #333;" onclick="generateSemester('All')" data-tooltip="一次產生 A/B 團與絲竹團的所有行程">產生 合併總表</button>
+                <button class="btn-all" onclick="generateSemester('All')" data-tooltip="依照所有勾選設定產生完整表格">產生 合併總表</button>
             </div>
         </div>
     </div>
@@ -275,41 +308,45 @@
         <div class="action-grid" style="grid-template-columns: 1fr;">
             <div class="action-card card-training" style="flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: center;">
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <label>開始：</label><input type="date" id="trainStartDate" style="padding: 8px;" data-tooltip="連續訓練的第一天">
-                    <label>結束：</label><input type="date" id="trainEndDate" style="padding: 8px;" data-tooltip="連續訓練的最後一天">
+                    <label>開始：</label><input type="date" id="trainStartDate" style="padding: 8px;" data-tooltip="訓練第一天">
+                    <label>結束：</label><input type="date" id="trainEndDate" style="padding: 8px;" data-tooltip="訓練最後一天">
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;" data-tooltip="訓練活動名稱">
+                    <input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;" data-tooltip="訓練名稱">
                     <input type="text" id="trainTime" value="09:00~16:00" placeholder="時間" style="padding: 8px; width: 100px;" data-tooltip="訓練時間">
                 </div>
-                <button class="btn-train" style="width: auto; padding: 10px 20px;" onclick="addTrainingBatch()" data-tooltip="將連續日期加入目前的表格中 (不會清除舊資料)">＋ 加入訓練日程</button>
+                <button class="btn-train" style="width: auto; padding: 10px 20px;" onclick="addTrainingBatch()" data-tooltip="保留現有表格，將這些日期插入並排序">＋ 加入訓練日程</button>
             </div>
+        </div>
+        <div style="text-align: center; color: #FF5722; font-size: 0.9em; margin-top: 10px;">
+            💡 此功能採「累加」模式，不會清除上方已建立的資料，且會自動跳過週六與週日。
         </div>
     </div>
 
     <div class="toolbar">
-        <button class="btn-copy" onclick="copyTable()" data-tooltip="複製表格內容，可直接貼上 Excel 或 Google Sheet">📋 複製表格到 Excel</button>
-        <button class="btn-clear" onclick="clearTable()" data-tooltip="清空下方所有表格內容">🗑️ 清空全部</button>
+        <button class="btn-copy" onclick="copyTable()" data-tooltip="複製表格內容，可直接在 Excel 按貼上">📋 複製表格到 Excel</button>
+        <button class="btn-clear" onclick="clearTable()" data-tooltip="刪除表格內所有資料">🗑️ 清空全部</button>
     </div>
 
     <div class="table-container">
         <table id="scheduleTable">
             <thead>
                 <tr>
-                    <th style="width: 100px;" data-tooltip="日期 (MM/DD)">日期</th>
+                    <th style="width: 100px;">日期</th>
                     <th style="width: 60px;">星期</th>
                     <th style="width: 250px;">值班時段/活動內容</th>
                     <th style="width: 130px;">時間</th>
                     <th>值班家長一</th>
                     <th>值班家長二</th>
                     <th>值班家長三</th>
-                    <th style="width: 80px;">操作</th>
+                    <th style="width: 100px;">操作</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                </tbody>
         </table>
-        <div id="emptyMsg" style="text-align: center; color: #999; padding: 40px;">
-            目前無資料，請設定上方日期與星期並產生
+        <div id="emptyMsg" style="text-align: center; color: #999; padding: 50px;">
+            表格目前是空的，請由上方設定並點擊「產生」按鈕
         </div>
     </div>
 
@@ -326,14 +363,16 @@
     </datalist>
 
     <script>
-        // 初始化日期
+        // --- 初始化設定 ---
         window.onload = function() {
+            // 預設學期：今天 ~ 3個月後
             const today = new Date();
             const threeMonthsLater = new Date();
             threeMonthsLater.setMonth(today.getMonth() + 3);
             document.getElementById('semStartDate').valueAsDate = today;
             document.getElementById('semEndDate').valueAsDate = threeMonthsLater;
             
+            // 預設暑訓：下週一 ~ 下週五
             const nextMon = new Date();
             nextMon.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
             const nextFri = new Date(nextMon);
@@ -344,12 +383,14 @@
 
         const daysMap = ['日', '一', '二', '三', '四', '五', '六'];
 
+        // --- 工具函數：取得勾選的星期 ---
+        // 回傳例如：[1, 3, 5] 代表週一、三、五
         function getSelectedDays(containerId) {
             const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
             return Array.from(checkboxes).map(cb => parseInt(cb.value));
         }
 
-        // --- 功能 1: 產生學期例行表 ---
+        // --- 功能 1: 產生學期例行表 (核心邏輯) ---
         function generateSemester(mode) {
             const start = document.getElementById('semStartDate').value;
             const end = document.getElementById('semEndDate').value;
@@ -357,44 +398,58 @@
 
             if (!start || !end) { alert("請先設定學期區間！"); return; }
 
+            // 清空舊表格 (因為是產生新學期)
             tbody.innerHTML = "";
             document.getElementById('emptyMsg').style.display = 'none';
 
             let current = new Date(start);
             const endDate = new Date(end);
             
+            // 取得 A/B 團介面設定
             const abDays = getSelectedDays('daysAB');
             const abTime = document.getElementById('timeAB').value;
             const abTextTue = document.getElementById('txtAB_Tue').value;
             const abTextThu = document.getElementById('txtAB_Thu').value;
             const abTextOther = document.getElementById('txtAB_Other').value;
 
+            // 取得 絲竹 團介面設定
             const silkDays = getSelectedDays('daysSilk');
             const silkTime = document.getElementById('timeSilk').value;
             const silkText = document.getElementById('txtSilk').value;
 
+            // 迴圈遍歷每一天
             while (current <= endDate) {
                 const day = current.getDay();
                 
+                // --- 邏輯 A：A/B 團 ---
                 if (mode === 'AB' || mode === 'All') {
+                    // 如果這一天有被勾選
                     if (abDays.includes(day)) {
-                        let act = abTextOther;
-                        if (day === 2) act = abTextTue;
-                        if (day === 4) act = abTextThu;
+                        let act = abTextOther; // 預設使用「其他天」文字
+                        
+                        // 特殊邏輯：如果是週二，覆蓋為週二文字
+                        if (day === 2) act = abTextTue; 
+                        // 特殊邏輯：如果是週四，覆蓋為週四文字
+                        if (day === 4) act = abTextThu; 
+                        
                         insertRow(current, act, abTime, false);
                     }
                 }
 
+                // --- 邏輯 B：絲竹團 ---
                 if (mode === 'Silk' || mode === 'All') {
+                    // 如果這一天有被勾選
                     if (silkDays.includes(day)) {
+                        // 絲竹團通常沒有特殊換天邏輯，直接用設定文字
                         insertRow(current, silkText, silkTime, false);
                     }
                 }
+
                 current.setDate(current.getDate() + 1);
             }
         }
 
-        // --- 功能 2: 加入暑訓 ---
+        // --- 功能 2: 加入暑訓 (累加模式) ---
         function addTrainingBatch() {
             const start = document.getElementById('trainStartDate').value;
             const end = document.getElementById('trainEndDate').value;
@@ -409,25 +464,29 @@
             
             while (current <= endDate) {
                 const day = current.getDay();
+                // 自動跳過週六(6)與週日(0)
                 if (day !== 0 && day !== 6) { 
                     insertRow(current, name, time, false); 
                 }
                 current.setDate(current.getDate() + 1);
             }
+            // 插入完畢後，執行日期排序
             sortTable();
         }
 
-        // --- 核心: 建立一列 ---
+        // --- 核心函數：在表格插入一列 ---
         function insertRow(dateObj, activity, time, isManual, nextToRow = null) {
             const tbody = document.querySelector('#scheduleTable tbody');
             const row = document.createElement('tr');
             
+            // 儲存日期供排序用 (YYYY-MM-DD)
             const isoDate = dateObj.toISOString().split('T')[0];
             row.setAttribute('data-date', isoDate);
 
             const dateText = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
             const dayText = daysMap[dateObj.getDay()];
 
+            // 若是手動新增，日期欄位給予 Input 以便修改
             let dateHtml = isManual 
                 ? `<input type="date" class="editable-cell" value="${isoDate}" onchange="updateRowDate(this)" data-tooltip="點擊修改日期">` 
                 : dateText;
@@ -443,72 +502,107 @@
                 <td><input class="editable-cell" value="${time}" data-tooltip="修改時間"></td>
                 <td></td><td></td><td></td>
                 <td class="action-cell">
-                    <button class="icon-btn add-row-btn" onclick="insertRowBelow(this)" data-tooltip="在此列下方插入新的一列">＋</button>
+                    <button class="icon-btn add-row-btn" onclick="insertRowBelow(this)" data-tooltip="在此列下方插入新列">＋</button>
                     <button class="icon-btn del-btn" onclick="removeRow(this)" data-tooltip="刪除此列">×</button>
                 </td>
             `;
 
+            // 決定插入位置
             if (nextToRow) {
-                nextToRow.after(row);
+                nextToRow.after(row); // 插在指定列後面
             } else {
-                tbody.appendChild(row);
+                tbody.appendChild(row); // 插在最後面
             }
         }
 
+        // --- 在該列下方插入新列 (Manual Mode) ---
         function insertRowBelow(btn) {
             const currentRow = btn.closest('tr');
             const currentDateStr = currentRow.getAttribute('data-date');
+            
+            // 預設複製當前列的日期，方便微調
             const newDate = new Date(currentDateStr);
+            
+            // 呼叫 insertRow，並標記 isManual=true, nextToRow=currentRow
             insertRow(newDate, "", "", true, currentRow);
         }
 
-        function removeRow(btn) { btn.closest('tr').remove(); }
+        // --- 刪除列 ---
+        function removeRow(btn) { 
+            btn.closest('tr').remove(); 
+        }
 
+        // --- 當手動修改日期 Input 時 ---
         function updateRowDate(input) {
             const d = new Date(input.value);
             if (!isNaN(d)) {
                 const row = input.closest('tr');
+                // 更新 data-date 屬性
                 row.setAttribute('data-date', input.value);
+                // 更新顯示的星期
                 row.querySelector('.day-text').innerText = daysMap[d.getDay()];
+                // 重新排序表格
                 sortTable();
             }
         }
 
+        // --- 表格日期排序 ---
         function sortTable() {
             const tbody = document.querySelector('#scheduleTable tbody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            rows.sort((a, b) => a.getAttribute('data-date').localeCompare(b.getAttribute('data-date')));
+            
+            rows.sort((a, b) => {
+                const dateA = a.getAttribute('data-date');
+                const dateB = b.getAttribute('data-date');
+                return dateA.localeCompare(dateB);
+            });
+
+            // 重新將排序好的 row 加回 tbody
             rows.forEach(row => tbody.appendChild(row));
         }
 
+        // --- 清空表格 ---
         function clearTable() {
-            if (confirm("確定清空？")) {
+            if (confirm("確定要清空所有內容嗎？")) {
                 document.querySelector('#scheduleTable tbody').innerHTML = "";
                 document.getElementById('emptyMsg').style.display = 'block';
             }
         }
 
+        // --- 複製表格到 Excel ---
         function copyTable() {
             const table = document.getElementById('scheduleTable');
             const tbody = table.querySelector('tbody');
             if (tbody.rows.length === 0) { alert("無資料可複製"); return; }
+            
+            // 確保順序正確
             sortTable();
+            
             let csv = [];
+            // 取得標題 (扣除最後一欄操作)
             const ths = Array.from(table.querySelectorAll('thead th')).slice(0, -1);
             csv.push(ths.map(th => th.innerText).join('\t'));
+
+            // 取得每一列資料
             table.querySelectorAll('tbody tr').forEach(row => {
                 const tds = Array.from(row.querySelectorAll('td')).slice(0, -1);
                 const rowData = tds.map((td, idx) => {
                     const inp = td.querySelector('input');
+                    // 如果是第一欄且是 date input (手動列)，轉成 M/D 格式
                     if (idx === 0 && inp && inp.type === 'date') {
                         const d = new Date(inp.value);
                         return `${d.getMonth() + 1}/${d.getDate()}`;
                     }
+                    // 其他 input 或 text
                     return inp ? inp.value : td.innerText;
                 });
                 csv.push(rowData.join('\t'));
             });
-            navigator.clipboard.writeText(csv.join('\n')).then(() => alert("已複製！")).catch(() => alert("複製失敗"));
+
+            // 寫入剪貼簿
+            navigator.clipboard.writeText(csv.join('\n'))
+                .then(() => alert("✅ 已複製成功！\n請打開 Excel 或 Google Sheet 按下 Ctrl+V 貼上。"))
+                .catch(() => alert("❌ 複製失敗，請手動選取。"));
         }
     </script>
 </body>
