@@ -458,4 +458,58 @@
         function insertRowBelow(btn) {
             const currentRow = btn.closest('tr');
             const currentDateStr = currentRow.getAttribute('data-date');
-            const newDate = new
+            const newDate = new Date(currentDateStr);
+            insertRow(newDate, "", "", true, currentRow);
+        }
+
+        function removeRow(btn) { btn.closest('tr').remove(); }
+
+        function updateRowDate(input) {
+            const d = new Date(input.value);
+            if (!isNaN(d)) {
+                const row = input.closest('tr');
+                row.setAttribute('data-date', input.value);
+                row.querySelector('.day-text').innerText = daysMap[d.getDay()];
+                sortTable();
+            }
+        }
+
+        function sortTable() {
+            const tbody = document.querySelector('#scheduleTable tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort((a, b) => a.getAttribute('data-date').localeCompare(b.getAttribute('data-date')));
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function clearTable() {
+            if (confirm("確定清空？")) {
+                document.querySelector('#scheduleTable tbody').innerHTML = "";
+                document.getElementById('emptyMsg').style.display = 'block';
+            }
+        }
+
+        function copyTable() {
+            const table = document.getElementById('scheduleTable');
+            const tbody = table.querySelector('tbody');
+            if (tbody.rows.length === 0) { alert("無資料可複製"); return; }
+            sortTable();
+            let csv = [];
+            const ths = Array.from(table.querySelectorAll('thead th')).slice(0, -1);
+            csv.push(ths.map(th => th.innerText).join('\t'));
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const tds = Array.from(row.querySelectorAll('td')).slice(0, -1);
+                const rowData = tds.map((td, idx) => {
+                    const inp = td.querySelector('input');
+                    if (idx === 0 && inp && inp.type === 'date') {
+                        const d = new Date(inp.value);
+                        return `${d.getMonth() + 1}/${d.getDate()}`;
+                    }
+                    return inp ? inp.value : td.innerText;
+                });
+                csv.push(rowData.join('\t'));
+            });
+            navigator.clipboard.writeText(csv.join('\n')).then(() => alert("已複製！")).catch(() => alert("複製失敗"));
+        }
+    </script>
+</body>
+</html>
