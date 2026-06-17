@@ -15,7 +15,7 @@
         }
         h2 { color: #333; text-align: center; margin-bottom: 20px; }
 
-        /* --- 使用說明區塊 (新增) --- */
+        /* --- 使用說明區塊 --- */
         .guide-toggle-btn {
             display: block;
             margin: 0 auto 20px auto;
@@ -333,6 +333,7 @@
 
     <h2>樂團值班表產生器 (最終完整版)</h2>
 
+    <!-- 使用說明按鈕與隱藏區塊 -->
     <button id="toggleGuideBtn" class="guide-toggle-btn" onclick="toggleGuide()">📖 顯示使用說明</button>
     
     <div id="guideContainer" class="guide-container">
@@ -366,6 +367,7 @@
             <li>點擊你要貼上的 <span class="highlight">第一個儲存格 (例如 A1)</span>，按下鍵盤 <code>Ctrl + V</code> (Mac 請按 <code>Cmd + V</code>) 即可完美貼上！</li>
         </ol>
 
+        <!-- 重要提醒區塊 -->
         <div class="alert-box">
             <strong style="color: #d32f2f; font-size: 1.1em;">⚠️ 重要排班提醒：</strong><br>
             本工具僅依據您設定的週期自動產生日曆，<strong>並未連動</strong>行政院人事行政總處或國語實小的行事曆。<br>
@@ -412,9 +414,11 @@
                     <label data-tooltip="若勾選週一三五，將使用此內容">其他天</label>
                     <input type="text" id="txtAB_Other" value="A/B團加練">
                 </div>
-                <div class="input-row">
+                
+                <!-- 修正提示框：將 data-tooltip 移到 div 外層 -->
+                <div class="input-row" data-tooltip="設定時間">
                     <label>練習時間</label>
-                    <input type="text" id="timeAB" value="16:00~18:30" data-tooltip="設定時間">
+                    <input type="text" id="timeAB" value="16:00~18:30">
                 </div>
                 <button class="btn-ab" onclick="generateSemester('AB')" data-tooltip="清除舊表，僅產生 A/B 團行程">產生 A/B 團表</button>
             </div>
@@ -430,13 +434,15 @@
                     <label class="day-label"><input type="checkbox" value="5"><span>五</span></label>
                 </div>
 
-                <div class="input-row">
+                <!-- 修正提示框：將 data-tooltip 移到 div 外層 -->
+                <div class="input-row" data-tooltip="絲竹團活動名稱">
                     <label>活動內容</label>
-                    <input type="text" id="txtSilk" value="絲竹團合奏" data-tooltip="絲竹團活動名稱">
+                    <input type="text" id="txtSilk" value="絲竹團合奏">
                 </div>
-                <div class="input-row">
+                <!-- 修正提示框：將 data-tooltip 移到 div 外層 -->
+                <div class="input-row" data-tooltip="設定時間">
                     <label>練習時間</label>
-                    <input type="text" id="timeSilk" value="12:00~15:00" data-tooltip="設定時間">
+                    <input type="text" id="timeSilk" value="12:00~15:00">
                 </div>
                 <button class="btn-silk" onclick="generateSemester('Silk')" data-tooltip="清除舊表，僅產生絲竹團行程">產生 絲竹團表</button>
             </div>
@@ -455,9 +461,10 @@
         <div class="section-title" style="color: #FF5722; border-color: #ffd8cc;">Step 2: 加入暑訓 / 寒訓 (連續日期)</div>
         <div class="action-grid" style="grid-template-columns: 1fr;">
             <div class="action-card card-training">
+                <!-- 修正提示框：用 span 包覆 input 來觸發 tooltip -->
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
-                    <label>開始：</label><input type="date" id="trainStartDate" style="padding: 8px;" data-tooltip="訓練第一天">
-                    <label>結束：</label><input type="date" id="trainEndDate" style="padding: 8px;" data-tooltip="訓練最後一天">
+                    <label>開始：</label><span data-tooltip="訓練第一天"><input type="date" id="trainStartDate" style="padding: 8px;"></span>
+                    <label>結束：</label><span data-tooltip="訓練最後一天"><input type="date" id="trainEndDate" style="padding: 8px;"></span>
                 </div>
                 
                 <div class="quick-btn-group" style="margin-top: -5px;">
@@ -478,9 +485,10 @@
                     <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="5" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>五</span></label>
                 </div>
 
+                <!-- 修正提示框：用 span 包覆 input 來觸發 tooltip -->
                 <div style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; margin-top: 5px;">
-                    <input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;" data-tooltip="訓練名稱">
-                    <input type="text" id="trainTime" value="09:00~16:00" placeholder="時間" style="padding: 8px; width: 100px;" data-tooltip="訓練時間">
+                    <span data-tooltip="訓練名稱"><input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;"></span>
+                    <span data-tooltip="訓練時間"><input type="text" id="trainTime" value="09:00~16:00" placeholder="時間" style="padding: 8px; width: 100px;"></span>
                     <button class="btn-train" style="width: auto; padding: 10px 20px; margin-top: 0;" onclick="addTrainingBatch()" data-tooltip="保留現有表格，將勾選的日期插入並排序">＋ 加入訓練日程</button>
                 </div>
             </div>
@@ -534,7 +542,6 @@
     </datalist>
 
     <script>
-        // --- 顯示/隱藏使用說明 ---
         function toggleGuide() {
             const guide = document.getElementById('guideContainer');
             const btn = document.getElementById('toggleGuideBtn');
@@ -551,19 +558,16 @@
             }
         }
 
-        // --- 初始化設定 ---
         window.onload = function() {
             const today = new Date();
             const currentMonth = today.getMonth() + 1;
 
-            // 智慧判斷：目前如果是 2月~7月，自動載入「下學期」，否則載入「上學期」
             if (currentMonth >= 2 && currentMonth <= 7) {
                 quickSetSemester(2);
             } else {
                 quickSetSemester(1);
             }
             
-            // 預設訓練日期為下週一至五 (按鈕已移除，但保留預設值方便直接修改)
             const nextMon = new Date();
             nextMon.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
             const nextFri = new Date(nextMon);
@@ -573,63 +577,52 @@
             document.getElementById('trainEndDate').value = formatDate(nextFri);
         };
 
-        // --- 快速載入學期日期 (跨年度智慧判斷) ---
         function quickSetSemester(term) {
             const today = new Date();
             let y = today.getFullYear();
             let m = today.getMonth() + 1;
 
             if (term === 1) {
-                // 上(第一)學期：8/30 ~ 隔年 1/20
-                if (m <= 2) {
-                    y = y - 1; // 如果是 1、2 月按第一學期，通常是指剛結束的那一學期
-                }
+                if (m <= 2) { y = y - 1; }
                 document.getElementById('semStartDate').value = `${y}-08-30`;
                 document.getElementById('semEndDate').value = `${y+1}-01-20`;
             } else if (term === 2) {
-                // 下(第二)學期：2/11 ~ 6/30
-                if (m >= 8) {
-                    y = y + 1; // 如果是下半年按第二學期，通常是指明年的事
-                }
+                if (m >= 8) { y = y + 1; }
                 document.getElementById('semStartDate').value = `${y}-02-11`;
                 document.getElementById('semEndDate').value = `${y}-06-30`;
             }
         }
 
-        // --- 快速載入寒暑訓日期 ---
         function quickSetTraining(type) {
             const today = new Date();
             let y = today.getFullYear();
             let m = today.getMonth() + 1;
 
             if (type === 'summer') {
-                if (m >= 9) y = y + 1; // 如果已經是 9 月以後，代表要排的是明年的暑假
+                if (m >= 9) y = y + 1; 
                 document.getElementById('trainStartDate').value = `${y}-07-01`;
                 document.getElementById('trainEndDate').value = `${y}-08-29`;
                 document.getElementById('trainName').value = `樂團暑訓`;
             } 
             else if (type === 'winter') {
-                if (m >= 3) y = y + 1; // 如果已經過了 2 月，代表要排的是明年的寒假
+                if (m >= 3) y = y + 1; 
                 document.getElementById('trainStartDate').value = `${y}-01-21`;
                 document.getElementById('trainEndDate').value = `${y}-02-10`;
                 document.getElementById('trainName').value = `樂團寒訓`;
             } 
         }
 
-        // 訓練星期連動功能：點擊「一至五」切換全部
         function toggleTrainDays(masterCb) {
             const checkboxes = document.querySelectorAll('.train-day-cb');
             checkboxes.forEach(cb => cb.checked = masterCb.checked);
         }
 
-        // 訓練星期連動功能：點擊個別星期時檢查是否要勾選「一至五」
         function checkTrainAllDays() {
             const checkboxes = document.querySelectorAll('.train-day-cb');
             const allChecked = Array.from(checkboxes).every(cb => cb.checked);
             document.getElementById('trainAllDays').checked = allChecked;
         }
 
-        // 將 Date 物件轉為 YYYY-MM-DD 格式
         function formatDate(date) {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -644,7 +637,6 @@
             return Array.from(checkboxes).map(cb => parseInt(cb.value));
         }
 
-        // --- 功能 1: 產生學期例行表 (核心邏輯) ---
         function generateSemester(mode) {
             const start = document.getElementById('semStartDate').value;
             const end = document.getElementById('semEndDate').value;
@@ -652,30 +644,25 @@
 
             if (!start || !end) { alert("請先設定學期區間！"); return; }
 
-            // 清空舊表格 (因為是產生新學期)
             tbody.innerHTML = "";
             document.getElementById('emptyMsg').style.display = 'none';
 
             let current = new Date(start);
             const endDate = new Date(end);
             
-            // 取得 A/B 團介面設定
             const abDays = getSelectedDays('daysAB');
             const abTime = document.getElementById('timeAB').value;
             const abTextTue = document.getElementById('txtAB_Tue').value;
             const abTextThu = document.getElementById('txtAB_Thu').value;
             const abTextOther = document.getElementById('txtAB_Other').value;
 
-            // 取得 絲竹 團介面設定
             const silkDays = getSelectedDays('daysSilk');
             const silkTime = document.getElementById('timeSilk').value;
             const silkText = document.getElementById('txtSilk').value;
 
-            // 迴圈遍歷每一天
             while (current <= endDate) {
                 const day = current.getDay();
                 
-                // --- 邏輯 A：A/B 團 ---
                 if (mode === 'AB' || mode === 'All') {
                     if (abDays.includes(day)) {
                         let act = abTextOther; 
@@ -685,7 +672,6 @@
                     }
                 }
 
-                // --- 邏輯 B：絲竹團 ---
                 if (mode === 'Silk' || mode === 'All') {
                     if (silkDays.includes(day)) {
                         insertRow(current, silkText, silkTime, false);
@@ -696,14 +682,12 @@
             }
         }
 
-        // --- 功能 2: 加入暑訓/寒訓 (累加模式) ---
         function addTrainingBatch() {
             const start = document.getElementById('trainStartDate').value;
             const end = document.getElementById('trainEndDate').value;
             const name = document.getElementById('trainName').value;
             const time = document.getElementById('trainTime').value;
 
-            // 取得使用者勾選的訓練星期
             const checkedBoxes = document.querySelectorAll('.train-day-cb:checked');
             const selectedDays = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
 
@@ -717,40 +701,40 @@
             
             while (current <= endDate) {
                 const day = current.getDay();
-                // 若目前的星期有在勾選清單內，則插入此列
                 if (selectedDays.includes(day)) { 
                     insertRow(current, name, time, false); 
                 }
                 current.setDate(current.getDate() + 1);
             }
-            // 插入完畢後，執行日期排序
             sortTable();
         }
 
-        // --- 核心函數：在表格插入一列 ---
         function insertRow(dateObj, activity, time, isManual, nextToRow = null) {
             const tbody = document.querySelector('#scheduleTable tbody');
             const row = document.createElement('tr');
             
-            const isoDate = formatDate(dateObj); // 使用補零的格式，避免排序錯誤
+            const isoDate = formatDate(dateObj); 
             row.setAttribute('data-date', isoDate);
 
             const dateText = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
             const dayText = daysMap[dateObj.getDay()];
 
             let dateHtml = isManual 
-                ? `<input type="date" class="editable-cell" value="${isoDate}" onchange="updateRowDate(this)" data-tooltip="點擊修改日期">` 
+                ? `<input type="date" class="editable-cell" value="${isoDate}" onchange="updateRowDate(this)">` 
                 : dateText;
             
             let dayHtml = isManual 
                 ? `<span class="day-text">${dayText}</span>` 
                 : dayText;
+            
+            // 修正提示框：將表格內部 input 的提示綁定到外層的 td 標籤上
+            let dateTooltip = isManual ? `data-tooltip="點擊修改日期"` : '';
 
             row.innerHTML = `
-                <td>${dateHtml}</td>
+                <td ${dateTooltip}>${dateHtml}</td>
                 <td>${dayHtml}</td>
-                <td><input class="editable-cell" list="activityOptions" value="${activity}" placeholder="輸入活動" data-tooltip="可輸入或選擇預設選項"></td>
-                <td><input class="editable-cell" value="${time}" data-tooltip="修改時間"></td>
+                <td data-tooltip="可輸入或選擇預設選項"><input class="editable-cell" list="activityOptions" value="${activity}" placeholder="輸入活動"></td>
+                <td data-tooltip="修改時間"><input class="editable-cell" value="${time}"></td>
                 <td></td><td></td><td></td>
                 <td class="action-cell">
                     <button class="icon-btn add-row-btn" onclick="insertRowBelow(this)" data-tooltip="在此列下方插入新列">＋</button>
