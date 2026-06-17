@@ -142,6 +142,28 @@
         .day-label:hover { background-color: #e8f5e9; border-radius: 4px; }
         .day-label input { margin-bottom: 5px; cursor: pointer; transform: scale(1.2); }
 
+        /* 訓練區塊專用星期選擇器樣式 */
+        .train-day-selector {
+            width: 100%; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-top: 10px; 
+            background-color: #ffebe6; 
+            border-color: #ffccbc;
+        }
+        .train-day-selector .day-label:hover {
+            background-color: #ffccbc;
+        }
+        .train-master-label {
+            flex: 0 1 auto; 
+            flex-direction: row; 
+            gap: 5px; 
+            align-items: center; 
+            color: #d84315; 
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
         /* 按鈕樣式 */
         button {
             width: 100%;
@@ -351,21 +373,36 @@
                     <label>結束：</label><input type="date" id="trainEndDate" style="padding: 8px;" data-tooltip="訓練最後一天">
                 </div>
                 
+                <!-- 寒暑假快速按鈕群組 -->
                 <div class="quick-btn-group" style="margin-top: -5px;">
                     <button class="btn-quick train-color" onclick="quickSetTraining('summer')" data-tooltip="自動填入：7/1 ~ 8/29">☀️ 暑訓 (7月~8月)</button>
                     <button class="btn-quick train-color" onclick="quickSetTraining('winter')" data-tooltip="自動填入：1/21 ~ 2/10">❄️ 寒訓 (1月~2月)</button>
                     <button class="btn-quick train-color" onclick="quickSetTraining('nextWeek')" data-tooltip="自動填入：下週一至五">🗓️ 下週一至五</button>
                 </div>
 
+                <!-- 訓練日期專屬星期選擇器 -->
+                <div class="day-selector train-day-selector" data-tooltip="勾選訓練要舉行的星期">
+                    <label class="day-label train-master-label">
+                        <input type="checkbox" id="trainAllDays" checked onchange="toggleTrainDays(this)" style="transform: scale(1.3);">
+                        <span>一至五</span>
+                    </label>
+                    <div style="border-left: 2px solid #ffccbc; margin: 0 5px;"></div>
+                    <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="1" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>一</span></label>
+                    <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="2" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>二</span></label>
+                    <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="3" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>三</span></label>
+                    <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="4" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>四</span></label>
+                    <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="5" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>五</span></label>
+                </div>
+
                 <div style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; margin-top: 5px;">
                     <input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;" data-tooltip="訓練名稱">
                     <input type="text" id="trainTime" value="09:00~16:00" placeholder="時間" style="padding: 8px; width: 100px;" data-tooltip="訓練時間">
-                    <button class="btn-train" style="width: auto; padding: 10px 20px; margin-top: 0;" onclick="addTrainingBatch()" data-tooltip="保留現有表格，將這些日期插入並排序">＋ 加入訓練日程</button>
+                    <button class="btn-train" style="width: auto; padding: 10px 20px; margin-top: 0;" onclick="addTrainingBatch()" data-tooltip="保留現有表格，將勾選的日期插入並排序">＋ 加入訓練日程</button>
                 </div>
             </div>
         </div>
         <div style="text-align: center; color: #FF5722; font-size: 0.9em; margin-top: 10px;">
-            💡 此功能採「累加」模式，不會清除上方已建立的資料，且會自動跳過週六與週日。
+            💡 此功能採「累加」模式，不會清除上方已建立的資料。請透過勾選決定要產生的星期。
         </div>
     </div>
 
@@ -449,7 +486,7 @@
             }
         }
 
-        // --- 新增：快速載入寒暑訓日期 ---
+        // --- 快速載入寒暑訓日期 ---
         function quickSetTraining(type) {
             const today = new Date();
             let y = today.getFullYear();
@@ -476,6 +513,19 @@
                 document.getElementById('trainStartDate').value = formatDate(nextMon);
                 document.getElementById('trainEndDate').value = formatDate(nextFri);
             }
+        }
+
+        // 訓練星期連動功能：點擊「一至五」切換全部
+        function toggleTrainDays(masterCb) {
+            const checkboxes = document.querySelectorAll('.train-day-cb');
+            checkboxes.forEach(cb => cb.checked = masterCb.checked);
+        }
+
+        // 訓練星期連動功能：點擊個別星期時檢查是否要勾選「一至五」
+        function checkTrainAllDays() {
+            const checkboxes = document.querySelectorAll('.train-day-cb');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            document.getElementById('trainAllDays').checked = allChecked;
         }
 
         // 將 Date 物件轉為 YYYY-MM-DD 格式
@@ -552,7 +602,13 @@
             const name = document.getElementById('trainName').value;
             const time = document.getElementById('trainTime').value;
 
+            // 取得使用者勾選的訓練星期
+            const checkedBoxes = document.querySelectorAll('.train-day-cb:checked');
+            const selectedDays = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
             if (!start || !end) { alert("請設定日期！"); return; }
+            if (selectedDays.length === 0) { alert("請至少勾選一天的星期！"); return; }
+
             document.getElementById('emptyMsg').style.display = 'none';
 
             let current = new Date(start);
@@ -560,8 +616,8 @@
             
             while (current <= endDate) {
                 const day = current.getDay();
-                // 自動跳過週六(6)與週日(0)
-                if (day !== 0 && day !== 6) { 
+                // 若目前的星期有在勾選清單內，則插入此列
+                if (selectedDays.includes(day)) { 
                     insertRow(current, name, time, false); 
                 }
                 current.setDate(current.getDate() + 1);
