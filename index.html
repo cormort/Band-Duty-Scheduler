@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>樂團值班表產生器 (最終完整版)</title>
     <style>
-        /* --- 基礎設定 --- */
+        /* --- 基礎設定 & 響應式核心 --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         body {
             font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
             max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
+            margin: 0 auto;
+            padding: 20px;
             background-color: #f0f2f5;
+            overflow-x: hidden; /* 防止整個網頁在手機上產生左右滾動條 */
         }
         h2 { color: #333; text-align: center; margin-bottom: 20px; }
 
@@ -68,7 +72,6 @@
         /* --- Tooltip (提示框) 樣式 --- */
         [data-tooltip] {
             position: relative;
-            /* 已移除 cursor: help; 讓滑鼠游標保持預設樣式 */
         }
         [data-tooltip]:hover::after {
             content: attr(data-tooltip);
@@ -107,6 +110,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin-bottom: 25px;
+            width: 100%;
         }
 
         .section-title {
@@ -131,8 +135,8 @@
 
         .action-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 優化縮小適應手機 */
+            gap: 20px;
         }
 
         .action-card {
@@ -158,8 +162,9 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.95em;
+            flex-wrap: wrap; /* 手機版彈性折行 */
         }
-        .input-row label { width: 30%; color: #666; font-weight: bold; }
+        .input-row label { width: 32%; color: #666; font-weight: bold; }
         .input-row input[type="text"] {
             width: 65%;
             padding: 8px;
@@ -176,6 +181,8 @@
             padding: 10px;
             border-radius: 6px;
             border: 1px solid #eee;
+            flex-wrap: wrap; /* 允許手機版自動換行 */
+            gap: 5px;
         }
         .day-label {
             display: flex;
@@ -193,7 +200,7 @@
         .train-day-selector {
             width: 100%; 
             justify-content: center; 
-            gap: 15px; 
+            gap: 10px; 
             margin-top: 10px; 
             background-color: #ffebe6; 
             border-color: #ffccbc;
@@ -208,7 +215,7 @@
             align-items: center; 
             color: #d84315; 
             font-weight: bold;
-            padding: 0 10px;
+            padding: 0 5px;
         }
 
         /* 按鈕樣式 */
@@ -244,6 +251,7 @@
             width: auto;
             padding: 6px 16px;
             margin-top: 0;
+            margin-bottom: 5px; /* 手機版換行時的間距 */
             font-size: 0.95em;
             font-weight: normal;
             background-color: #fff;
@@ -269,6 +277,7 @@
         .toolbar {
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
             gap: 15px;
             margin: 30px 0;
         }
@@ -282,10 +291,12 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            overflow-x: auto;
+            width: 100%;
+            overflow-x: auto; /* 產生水平捲軸 */
+            -webkit-overflow-scrolling: touch; /* 確保 iOS 上滑動順暢 */
             min-height: 300px;
         }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        table { width: 100%; border-collapse: collapse; min-width: 850px; /* 控制表格最低寬度 */ }
         th, td {
             border: 1px solid #e0e0e0;
             padding: 10px;
@@ -311,7 +322,7 @@
         }
         
         /* 表格內操作按鈕區 */
-        .action-cell { display: flex; gap: 8px; justify-content: center; }
+        .action-cell { display: flex; gap: 8px; justify-content: center; min-width: 80px; }
         .icon-btn {
             background: none;
             border: none;
@@ -327,6 +338,19 @@
         
         .del-btn { color: #f44336; background: #ffebee; }
         .del-btn:hover { background: #f44336; color: white; }
+
+        /* --- 手機版專屬優化 (Media Query) --- */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .config-section { padding: 15px; margin-bottom: 15px; }
+            .action-card { padding: 15px; }
+            h2 { font-size: 1.5em; }
+            /* 工具列按鈕改滿版 */
+            .toolbar { flex-direction: column; width: 100%; }
+            .btn-copy, .btn-clear { width: 100%; }
+            /* 日期選擇的排版微調 */
+            .date-range-global input { margin: 5px 0; width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -479,7 +503,7 @@
                     <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="5" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>五</span></label>
                 </div>
 
-                <div style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; margin-top: 5px;">
+                <div style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; margin-top: 5px; flex-wrap: wrap;">
                     <span data-tooltip="訓練名稱"><input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;"></span>
                     <span data-tooltip="訓練時間"><input type="text" id="trainTime" value="09:00~16:00" placeholder="時間" style="padding: 8px; width: 100px;"></span>
                     <button class="btn-train" style="width: auto; padding: 10px 20px; margin-top: 0;" onclick="addTrainingBatch()" data-tooltip="保留現有表格，將勾選的日期插入並排序">＋ 加入訓練日程</button>
@@ -503,7 +527,7 @@
         <table id="scheduleTable">
             <thead>
                 <tr>
-                    <th style="width: 100px;">操作</th>
+                    <th style="width: 80px;">操作</th>
                     <th style="width: 100px;">日期</th>
                     <th style="width: 60px;">星期</th>
                     <th style="width: 250px;">值班時段/活動內容</th>
@@ -722,7 +746,6 @@
             
             let dateTooltip = isManual ? `data-tooltip="點擊修改日期"` : '';
 
-            // 修改欄位順序：操作區塊改到第一個 td
             row.innerHTML = `
                 <td class="action-cell">
                     <button class="icon-btn add-row-btn" onclick="insertRowBelow(this)" data-tooltip="在此列下方插入新列">＋</button>
@@ -784,7 +807,6 @@
             }
         }
 
-        // 修改複製邏輯，忽略第一欄(操作欄)
         function copyTable() {
             const table = document.getElementById('scheduleTable');
             const tbody = table.querySelector('tbody');
@@ -793,16 +815,13 @@
             sortTable();
             
             let csv = [];
-            // 從 index 1 開始取，忽略 index 0 (操作欄)
             const ths = Array.from(table.querySelectorAll('thead th')).slice(1);
             csv.push(ths.map(th => th.innerText).join('\t'));
 
             table.querySelectorAll('tbody tr').forEach(row => {
-                // 從 index 1 開始取，忽略 index 0 (操作欄)
                 const tds = Array.from(row.querySelectorAll('td')).slice(1);
                 const rowData = tds.map((td, idx) => {
                     const inp = td.querySelector('input');
-                    // 因為已經 slice 過了，所以 idx === 0 現在是指「日期」欄
                     if (idx === 0 && inp && inp.type === 'date') {
                         const d = new Date(inp.value);
                         return `${d.getMonth() + 1}/${d.getDate()}`;
