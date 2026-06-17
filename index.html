@@ -333,7 +333,6 @@
 
     <h2>樂團值班表產生器 (最終完整版)</h2>
 
-    <!-- 使用說明按鈕與隱藏區塊 -->
     <button id="toggleGuideBtn" class="guide-toggle-btn" onclick="toggleGuide()">📖 顯示使用說明</button>
     
     <div id="guideContainer" class="guide-container">
@@ -357,7 +356,7 @@
         <h4>📌 Step 3：表格微調與確認</h4>
         <ul>
             <li><strong>修改文字</strong>：表格內的「日期」、「活動內容」、「時間」都可以直接點擊修改。</li>
-            <li><strong>新增/刪除</strong>：點擊表格右側的 <strong>【＋】</strong> 可在該天下方插入空白天數；點擊 <strong>【×】</strong> 可直接刪除該天。</li>
+            <li><strong>新增/刪除</strong>：點擊表格最左側的操作按鈕，<strong>【＋】</strong> 可在該天下方插入空白天數；點擊 <strong>【×】</strong> 可直接刪除該天。</li>
         </ul>
 
         <h4>📌 Step 4：複製並貼上共用 Google Sheet（最後一步 🎉）</h4>
@@ -367,11 +366,10 @@
             <li>點擊你要貼上的 <span class="highlight">第一個儲存格 (例如 A1)</span>，按下鍵盤 <code>Ctrl + V</code> (Mac 請按 <code>Cmd + V</code>) 即可完美貼上！</li>
         </ol>
 
-        <!-- 重要提醒區塊 -->
         <div class="alert-box">
             <strong style="color: #d32f2f; font-size: 1.1em;">⚠️ 重要排班提醒：</strong><br>
             本工具僅依據您設定的週期自動產生日曆，<strong>並未連動</strong>行政院人事行政總處或國語實小的行事曆。<br>
-            若遇上<strong>國定假日、校際交流、段考或外出比賽</strong>，請務必在表格產生後，自行手動點擊右側的「×」刪除該日期，或直接修改當天的活動內容！
+            若遇上<strong>國定假日、校際交流、段考或外出比賽</strong>，請務必在表格產生後，自行手動點擊左側的「×」刪除該日期，或直接修改當天的活動內容！
         </div>
     </div>
 
@@ -415,7 +413,6 @@
                     <input type="text" id="txtAB_Other" value="A/B團加練">
                 </div>
                 
-                <!-- 修正提示框：將 data-tooltip 移到 div 外層 -->
                 <div class="input-row" data-tooltip="設定時間">
                     <label>練習時間</label>
                     <input type="text" id="timeAB" value="16:00~18:30">
@@ -434,12 +431,10 @@
                     <label class="day-label"><input type="checkbox" value="5"><span>五</span></label>
                 </div>
 
-                <!-- 修正提示框：將 data-tooltip 移到 div 外層 -->
                 <div class="input-row" data-tooltip="絲竹團活動名稱">
                     <label>活動內容</label>
                     <input type="text" id="txtSilk" value="絲竹團合奏">
                 </div>
-                <!-- 修正提示框：將 data-tooltip 移到 div 外層 -->
                 <div class="input-row" data-tooltip="設定時間">
                     <label>練習時間</label>
                     <input type="text" id="timeSilk" value="12:00~15:00">
@@ -461,7 +456,6 @@
         <div class="section-title" style="color: #FF5722; border-color: #ffd8cc;">Step 2: 加入暑訓 / 寒訓 (連續日期)</div>
         <div class="action-grid" style="grid-template-columns: 1fr;">
             <div class="action-card card-training">
-                <!-- 修正提示框：用 span 包覆 input 來觸發 tooltip -->
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
                     <label>開始：</label><span data-tooltip="訓練第一天"><input type="date" id="trainStartDate" style="padding: 8px;"></span>
                     <label>結束：</label><span data-tooltip="訓練最後一天"><input type="date" id="trainEndDate" style="padding: 8px;"></span>
@@ -485,7 +479,6 @@
                     <label class="day-label" style="flex: 0 1 auto;"><input type="checkbox" value="5" class="train-day-cb" checked onchange="checkTrainAllDays()"><span>五</span></label>
                 </div>
 
-                <!-- 修正提示框：用 span 包覆 input 來觸發 tooltip -->
                 <div style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; margin-top: 5px;">
                     <span data-tooltip="訓練名稱"><input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;"></span>
                     <span data-tooltip="訓練時間"><input type="text" id="trainTime" value="09:00~16:00" placeholder="時間" style="padding: 8px; width: 100px;"></span>
@@ -510,6 +503,7 @@
         <table id="scheduleTable">
             <thead>
                 <tr>
+                    <th style="width: 100px;">操作</th>
                     <th style="width: 100px;">日期</th>
                     <th style="width: 60px;">星期</th>
                     <th style="width: 250px;">值班時段/活動內容</th>
@@ -517,7 +511,6 @@
                     <th>值班家長一</th>
                     <th>值班家長二</th>
                     <th>值班家長三</th>
-                    <th style="width: 100px;">操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -727,19 +720,19 @@
                 ? `<span class="day-text">${dayText}</span>` 
                 : dayText;
             
-            // 修正提示框：將表格內部 input 的提示綁定到外層的 td 標籤上
             let dateTooltip = isManual ? `data-tooltip="點擊修改日期"` : '';
 
+            // 修改欄位順序：操作區塊改到第一個 td
             row.innerHTML = `
+                <td class="action-cell">
+                    <button class="icon-btn add-row-btn" onclick="insertRowBelow(this)" data-tooltip="在此列下方插入新列">＋</button>
+                    <button class="icon-btn del-btn" onclick="removeRow(this)" data-tooltip="刪除此列">×</button>
+                </td>
                 <td ${dateTooltip}>${dateHtml}</td>
                 <td>${dayHtml}</td>
                 <td data-tooltip="可輸入或選擇預設選項"><input class="editable-cell" list="activityOptions" value="${activity}" placeholder="輸入活動"></td>
                 <td data-tooltip="修改時間"><input class="editable-cell" value="${time}"></td>
                 <td></td><td></td><td></td>
-                <td class="action-cell">
-                    <button class="icon-btn add-row-btn" onclick="insertRowBelow(this)" data-tooltip="在此列下方插入新列">＋</button>
-                    <button class="icon-btn del-btn" onclick="removeRow(this)" data-tooltip="刪除此列">×</button>
-                </td>
             `;
 
             if (nextToRow) {
@@ -791,6 +784,7 @@
             }
         }
 
+        // 修改複製邏輯，忽略第一欄(操作欄)
         function copyTable() {
             const table = document.getElementById('scheduleTable');
             const tbody = table.querySelector('tbody');
@@ -799,13 +793,16 @@
             sortTable();
             
             let csv = [];
-            const ths = Array.from(table.querySelectorAll('thead th')).slice(0, -1);
+            // 從 index 1 開始取，忽略 index 0 (操作欄)
+            const ths = Array.from(table.querySelectorAll('thead th')).slice(1);
             csv.push(ths.map(th => th.innerText).join('\t'));
 
             table.querySelectorAll('tbody tr').forEach(row => {
-                const tds = Array.from(row.querySelectorAll('td')).slice(0, -1);
+                // 從 index 1 開始取，忽略 index 0 (操作欄)
+                const tds = Array.from(row.querySelectorAll('td')).slice(1);
                 const rowData = tds.map((td, idx) => {
                     const inp = td.querySelector('input');
+                    // 因為已經 slice 過了，所以 idx === 0 現在是指「日期」欄
                     if (idx === 0 && inp && inp.type === 'date') {
                         const d = new Date(inp.value);
                         return `${d.getMonth() + 1}/${d.getDate()}`;
