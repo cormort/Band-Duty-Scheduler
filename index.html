@@ -68,7 +68,7 @@
         /* --- Tooltip (提示框) 樣式 --- */
         [data-tooltip] {
             position: relative;
-            cursor: help;
+            /* 已移除 cursor: help; 讓滑鼠游標保持預設樣式 */
         }
         [data-tooltip]:hover::after {
             content: attr(data-tooltip);
