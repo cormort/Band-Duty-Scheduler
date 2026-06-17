@@ -56,6 +56,14 @@
         .guide-container ul, .guide-container ol { margin-top: 5px; margin-bottom: 15px; padding-left: 25px; }
         .guide-container li { margin-bottom: 6px; }
         .guide-container .highlight { background-color: #ffe0b2; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #e65100; }
+        
+        .alert-box {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
 
         /* --- Tooltip (提示框) 樣式 --- */
         [data-tooltip] {
@@ -90,9 +98,6 @@
             border-top-color: #333;
             opacity: 0;
             animation: fadeIn 0.2s forwards;
-        }
-        @keyframes fadeIn {
-            to { opacity: 1; transform: translateX(-50%) translateY(-5px); }
         }
 
         /* --- 區塊佈局 --- */
@@ -351,7 +356,7 @@
         <h4>📌 Step 3：表格微調與確認</h4>
         <ul>
             <li><strong>修改文字</strong>：表格內的「日期」、「活動內容」、「時間」都可以直接點擊修改。</li>
-            <li><strong>新增/刪除</strong>：點擊表格右側的 <strong>【＋】</strong> 可在該天下方插入空白天數；點擊 <strong>【×】</strong> 可直接刪除該天（適合遇到國定假日停練時使用）。</li>
+            <li><strong>新增/刪除</strong>：點擊表格右側的 <strong>【＋】</strong> 可在該天下方插入空白天數；點擊 <strong>【×】</strong> 可直接刪除該天。</li>
         </ul>
 
         <h4>📌 Step 4：複製並貼上共用 Google Sheet（最後一步 🎉）</h4>
@@ -360,6 +365,12 @@
             <li>看到「✅ 已複製成功！」後，打開樂團共用的 <strong>Google Sheet 值班表</strong>。</li>
             <li>點擊你要貼上的 <span class="highlight">第一個儲存格 (例如 A1)</span>，按下鍵盤 <code>Ctrl + V</code> (Mac 請按 <code>Cmd + V</code>) 即可完美貼上！</li>
         </ol>
+
+        <div class="alert-box">
+            <strong style="color: #d32f2f; font-size: 1.1em;">⚠️ 重要排班提醒：</strong><br>
+            本工具僅依據您設定的週期自動產生日曆，<strong>並未連動</strong>行政院人事行政總處或國語實小的行事曆。<br>
+            若遇上<strong>國定假日、校際交流、段考或外出比賽</strong>，請務必在表格產生後，自行手動點擊右側的「×」刪除該日期，或直接修改當天的活動內容！
+        </div>
     </div>
 
     <div class="config-section">
@@ -452,7 +463,6 @@
                 <div class="quick-btn-group" style="margin-top: -5px;">
                     <button class="btn-quick train-color" onclick="quickSetTraining('summer')" data-tooltip="自動填入：7/1 ~ 8/29">☀️ 暑訓 (7月~8月)</button>
                     <button class="btn-quick train-color" onclick="quickSetTraining('winter')" data-tooltip="自動填入：1/21 ~ 2/10">❄️ 寒訓 (1月~2月)</button>
-                    <button class="btn-quick train-color" onclick="quickSetTraining('nextWeek')" data-tooltip="自動填入：下週一至五">🗓️ 下週一至五</button>
                 </div>
 
                 <div class="day-selector train-day-selector" data-tooltip="勾選訓練要舉行的星期">
@@ -486,6 +496,9 @@
     </div>
 
     <div class="table-container">
+        <div style="text-align: right; color: #d32f2f; font-size: 0.9em; margin-bottom: 8px; font-weight: bold;">
+            ⚠️ 提醒：請記得手動刪除國定假日或國語實小校際交流 / 比賽日！
+        </div>
         <table id="scheduleTable">
             <thead>
                 <tr>
@@ -550,8 +563,14 @@
                 quickSetSemester(1);
             }
             
-            // 預設訓練日期為下週一至五
-            quickSetTraining('nextWeek');
+            // 預設訓練日期為下週一至五 (按鈕已移除，但保留預設值方便直接修改)
+            const nextMon = new Date();
+            nextMon.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
+            const nextFri = new Date(nextMon);
+            nextFri.setDate(nextMon.getDate() + 4);
+            
+            document.getElementById('trainStartDate').value = formatDate(nextMon);
+            document.getElementById('trainEndDate').value = formatDate(nextFri);
         };
 
         // --- 快速載入學期日期 (跨年度智慧判斷) ---
@@ -595,15 +614,6 @@
                 document.getElementById('trainEndDate').value = `${y}-02-10`;
                 document.getElementById('trainName').value = `樂團寒訓`;
             } 
-            else if (type === 'nextWeek') {
-                const nextMon = new Date();
-                nextMon.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
-                const nextFri = new Date(nextMon);
-                nextFri.setDate(nextMon.getDate() + 4);
-                
-                document.getElementById('trainStartDate').value = formatDate(nextMon);
-                document.getElementById('trainEndDate').value = formatDate(nextFri);
-            }
         }
 
         // 訓練星期連動功能：點擊「一至五」切換全部
