@@ -101,7 +101,7 @@
         /* 卡片頂部顏色條 */
         .card-ab { border-top: 5px solid #4CAF50; }
         .card-silk { border-top: 5px solid #9C27B0; }
-        .card-training { border-top: 5px solid #FF5722; background-color: #fff8f5; }
+        .card-training { border-top: 5px solid #FF5722; background-color: #fff8f5; align-items: center; }
 
         .card-header { font-weight: bold; font-size: 1.2em; color: #333; text-align: center; }
 
@@ -163,16 +163,17 @@
         .btn-train { background-color: #FF5722; }
         .btn-all { background-color: #333; }
         
-        /* 快速載入學期按鈕 */
+        /* 快速載入按鈕群組 */
         .quick-btn-group {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-top: 15px;
         }
         button.btn-quick {
             width: auto;
-            padding: 6px 18px;
+            padding: 6px 16px;
             margin-top: 0;
             font-size: 0.95em;
             font-weight: normal;
@@ -183,6 +184,15 @@
         }
         button.btn-quick:hover {
             background-color: #1976D2;
+            color: #fff;
+        }
+        /* 訓練區塊專屬的快捷按鈕顏色 */
+        button.btn-quick.train-color {
+            color: #FF5722;
+            border-color: #FF5722;
+        }
+        button.btn-quick.train-color:hover {
+            background-color: #FF5722;
             color: #fff;
         }
 
@@ -335,16 +345,23 @@
     <div class="config-section" style="border: 2px solid #FF5722;">
         <div class="section-title" style="color: #FF5722; border-color: #ffd8cc;">Step 2: 加入暑訓 / 寒訓 (連續日期)</div>
         <div class="action-grid" style="grid-template-columns: 1fr;">
-            <div class="action-card card-training" style="flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: center;">
-                <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="action-card card-training">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
                     <label>開始：</label><input type="date" id="trainStartDate" style="padding: 8px;" data-tooltip="訓練第一天">
                     <label>結束：</label><input type="date" id="trainEndDate" style="padding: 8px;" data-tooltip="訓練最後一天">
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
+                
+                <div class="quick-btn-group" style="margin-top: -5px;">
+                    <button class="btn-quick train-color" onclick="quickSetTraining('summer')" data-tooltip="自動填入：7/1 ~ 8/29">☀️ 暑訓 (7月~8月)</button>
+                    <button class="btn-quick train-color" onclick="quickSetTraining('winter')" data-tooltip="自動填入：1/21 ~ 2/10">❄️ 寒訓 (1月~2月)</button>
+                    <button class="btn-quick train-color" onclick="quickSetTraining('nextWeek')" data-tooltip="自動填入：下週一至五">🗓️ 下週一至五</button>
+                </div>
+
+                <div style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; margin-top: 5px;">
                     <input type="text" id="trainName" value="樂團暑訓" placeholder="活動名稱" style="padding: 8px; width: 120px;" data-tooltip="訓練名稱">
                     <input type="text" id="trainTime" value="09:00~16:00" placeholder="時間" style="padding: 8px; width: 100px;" data-tooltip="訓練時間">
+                    <button class="btn-train" style="width: auto; padding: 10px 20px; margin-top: 0;" onclick="addTrainingBatch()" data-tooltip="保留現有表格，將這些日期插入並排序">＋ 加入訓練日程</button>
                 </div>
-                <button class="btn-train" style="width: auto; padding: 10px 20px;" onclick="addTrainingBatch()" data-tooltip="保留現有表格，將這些日期插入並排序">＋ 加入訓練日程</button>
             </div>
         </div>
         <div style="text-align: center; color: #FF5722; font-size: 0.9em; margin-top: 10px;">
@@ -387,6 +404,7 @@
         <option value="A團加練">
         <option value="B團加練">
         <option value="樂團暑訓">
+        <option value="樂團寒訓">
         <option value="分部暑訓">
         <option value="成發彩排">
     </datalist>
@@ -404,15 +422,8 @@
                 quickSetSemester(1);
             }
             
-            // 預設暑訓：下週一 ~ 下週五 (方便使用者操作)
-            const nextMon = new Date();
-            nextMon.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
-            const nextFri = new Date(nextMon);
-            nextFri.setDate(nextMon.getDate() + 4);
-            
-            // 處理日期格式 YYYY-MM-DD
-            document.getElementById('trainStartDate').value = formatDate(nextMon);
-            document.getElementById('trainEndDate').value = formatDate(nextFri);
+            // 預設訓練日期為下週一至五
+            quickSetTraining('nextWeek');
         };
 
         // --- 快速載入學期日期 (跨年度智慧判斷) ---
@@ -435,6 +446,35 @@
                 }
                 document.getElementById('semStartDate').value = `${y}-02-11`;
                 document.getElementById('semEndDate').value = `${y}-06-30`;
+            }
+        }
+
+        // --- 新增：快速載入寒暑訓日期 ---
+        function quickSetTraining(type) {
+            const today = new Date();
+            let y = today.getFullYear();
+            let m = today.getMonth() + 1;
+
+            if (type === 'summer') {
+                if (m >= 9) y = y + 1; // 如果已經是 9 月以後，代表要排的是明年的暑假
+                document.getElementById('trainStartDate').value = `${y}-07-01`;
+                document.getElementById('trainEndDate').value = `${y}-08-29`;
+                document.getElementById('trainName').value = `樂團暑訓`;
+            } 
+            else if (type === 'winter') {
+                if (m >= 3) y = y + 1; // 如果已經過了 2 月，代表要排的是明年的寒假
+                document.getElementById('trainStartDate').value = `${y}-01-21`;
+                document.getElementById('trainEndDate').value = `${y}-02-10`;
+                document.getElementById('trainName').value = `樂團寒訓`;
+            } 
+            else if (type === 'nextWeek') {
+                const nextMon = new Date();
+                nextMon.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
+                const nextFri = new Date(nextMon);
+                nextFri.setDate(nextMon.getDate() + 4);
+                
+                document.getElementById('trainStartDate').value = formatDate(nextMon);
+                document.getElementById('trainEndDate').value = formatDate(nextFri);
             }
         }
 
@@ -505,7 +545,7 @@
             }
         }
 
-        // --- 功能 2: 加入暑訓 (累加模式) ---
+        // --- 功能 2: 加入暑訓/寒訓 (累加模式) ---
         function addTrainingBatch() {
             const start = document.getElementById('trainStartDate').value;
             const end = document.getElementById('trainEndDate').value;
